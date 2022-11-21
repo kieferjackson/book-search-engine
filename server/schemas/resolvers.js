@@ -1,4 +1,5 @@
 const { User, Book } = require('../models');
+const { signToken } = require('../utils/auth');
 
 const resolvers =
 {
@@ -17,7 +18,16 @@ const resolvers =
     },
     Mutation:
     {
-        createUser: async (parent, args) => { return User.create(args) },
+        createUser: async (parent, args) => { 
+            const user = await User.create(args);
+
+            if (!user) {
+            return { message: 'Something is wrong!' };
+            }
+
+            const token = signToken(user);
+            return User.create({ token, user }) 
+        },
         saveBook: async(parent, args) => { return Book.create(args) },
         deleteBook: async(parent, { bookId }) => { return Book.findOneAndDelete({ _id: bookId }) }
     }
